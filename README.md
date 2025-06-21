@@ -12,16 +12,32 @@
 
 ## 功能特性
 
+### 基础功能
 - 创建新的PowerPoint演示文稿
 - 打开现有的PowerPoint文件
 - 保存演示文稿
-- 添加和删除幻灯片
+- 获取演示文稿信息
+
+### 幻灯片操作
+- 添加新幻灯片（支持不同布局）
+- 删除幻灯片
+- 复制幻灯片
+- 移动幻灯片位置
+- 设置幻灯片背景颜色
+
+### 内容编辑
 - 添加文本框和文本内容
 - 添加标题幻灯片
 - 添加带项目符号的内容
 - 插入图片
 - 添加各种形状（矩形、椭圆、三角形等）
-- 获取演示文稿信息
+- 添加表格
+- 设置表格单元格文本
+
+### 格式化功能
+- 设置文本格式（字体、大小、颜色、粗体、斜体、下划线）
+- 为形状添加超链接
+- 获取幻灯片中所有形状的详细信息
 
 ## 安装依赖
 
@@ -117,6 +133,57 @@ python example.py
 ### 11. delete_slide
 删除幻灯片
 - `slide_index`: 要删除的幻灯片索引
+
+### 12. duplicate_slide
+复制幻灯片
+- `slide_index`: 要复制的幻灯片索引
+
+### 13. move_slide
+移动幻灯片位置
+- `from_index`: 源位置索引
+- `to_index`: 目标位置索引
+
+### 14. add_table
+添加表格
+- `slide_index`: 幻灯片索引
+- `rows`: 表格行数
+- `cols`: 表格列数
+- `left`, `top`, `width`, `height`: 位置和大小（英寸）
+
+### 15. set_table_cell_text
+设置表格单元格文本
+- `slide_index`: 幻灯片索引
+- `table_index`: 表格索引
+- `row`: 行索引
+- `col`: 列索引
+- `text`: 文本内容
+
+### 16. set_slide_background_color
+设置幻灯片背景颜色
+- `slide_index`: 幻灯片索引
+- `color`: 背景颜色（十六进制）
+
+### 17. add_hyperlink
+为形状添加超链接
+- `slide_index`: 幻灯片索引
+- `shape_index`: 形状索引
+- `url`: 超链接URL
+- `display_text`: 显示文本（可选）
+
+### 18. set_text_formatting
+设置文本格式
+- `slide_index`: 幻灯片索引
+- `shape_index`: 形状索引
+- `font_name`: 字体名称（可选）
+- `font_size`: 字体大小（可选）
+- `font_color`: 字体颜色（可选）
+- `bold`: 是否加粗（可选）
+- `italic`: 是否斜体（可选）
+- `underline`: 是否下划线（可选）
+
+### 19. get_slide_shapes_info
+获取幻灯片中所有形状的信息
+- `slide_index`: 幻灯片索引
 
 ## 注意事项
 

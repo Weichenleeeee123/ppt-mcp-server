@@ -272,6 +272,210 @@ async def handle_list_tools():
                     },
                     "required": ["slide_index"]
                 }
+            ),
+            Tool(
+                name="duplicate_slide",
+                description="复制指定的幻灯片",
+                inputSchema={
+                    "type": "object",
+                    "properties": {
+                        "slide_index": {
+                            "type": "integer",
+                            "description": "要复制的幻灯片索引（从0开始）"
+                        }
+                    },
+                    "required": ["slide_index"]
+                }
+            ),
+            Tool(
+                name="move_slide",
+                description="移动幻灯片位置",
+                inputSchema={
+                    "type": "object",
+                    "properties": {
+                        "from_index": {
+                            "type": "integer",
+                            "description": "源位置索引（从0开始）"
+                        },
+                        "to_index": {
+                            "type": "integer",
+                            "description": "目标位置索引（从0开始）"
+                        }
+                    },
+                    "required": ["from_index", "to_index"]
+                }
+            ),
+            Tool(
+                name="add_table",
+                description="在幻灯片中添加表格",
+                inputSchema={
+                    "type": "object",
+                    "properties": {
+                        "slide_index": {
+                            "type": "integer",
+                            "description": "幻灯片索引（从0开始）"
+                        },
+                        "rows": {
+                            "type": "integer",
+                            "description": "表格行数"
+                        },
+                        "cols": {
+                            "type": "integer",
+                            "description": "表格列数"
+                        },
+                        "left": {
+                            "type": "number",
+                            "description": "表格左边距（英寸）",
+                            "default": 1
+                        },
+                        "top": {
+                            "type": "number",
+                            "description": "表格上边距（英寸）",
+                            "default": 2
+                        },
+                        "width": {
+                            "type": "number",
+                            "description": "表格宽度（英寸）",
+                            "default": 8
+                        },
+                        "height": {
+                            "type": "number",
+                            "description": "表格高度（英寸）",
+                            "default": 4
+                        }
+                    },
+                    "required": ["slide_index", "rows", "cols"]
+                }
+            ),
+            Tool(
+                name="set_table_cell_text",
+                description="设置表格单元格文本",
+                inputSchema={
+                    "type": "object",
+                    "properties": {
+                        "slide_index": {
+                            "type": "integer",
+                            "description": "幻灯片索引（从0开始）"
+                        },
+                        "table_index": {
+                            "type": "integer",
+                            "description": "表格索引（从0开始）"
+                        },
+                        "row": {
+                            "type": "integer",
+                            "description": "行索引（从0开始）"
+                        },
+                        "col": {
+                            "type": "integer",
+                            "description": "列索引（从0开始）"
+                        },
+                        "text": {
+                            "type": "string",
+                            "description": "要设置的文本内容"
+                        }
+                    },
+                    "required": ["slide_index", "table_index", "row", "col", "text"]
+                }
+            ),
+            Tool(
+                name="set_slide_background_color",
+                description="设置幻灯片背景颜色",
+                inputSchema={
+                    "type": "object",
+                    "properties": {
+                        "slide_index": {
+                            "type": "integer",
+                            "description": "幻灯片索引（从0开始）"
+                        },
+                        "color": {
+                            "type": "string",
+                            "description": "背景颜色（十六进制，如FF0000）"
+                        }
+                    },
+                    "required": ["slide_index", "color"]
+                }
+            ),
+            Tool(
+                name="add_hyperlink",
+                description="为形状添加超链接",
+                inputSchema={
+                    "type": "object",
+                    "properties": {
+                        "slide_index": {
+                            "type": "integer",
+                            "description": "幻灯片索引（从0开始）"
+                        },
+                        "shape_index": {
+                            "type": "integer",
+                            "description": "形状索引（从0开始）"
+                        },
+                        "url": {
+                            "type": "string",
+                            "description": "超链接URL"
+                        },
+                        "display_text": {
+                            "type": "string",
+                            "description": "显示文本（可选）"
+                        }
+                    },
+                    "required": ["slide_index", "shape_index", "url"]
+                }
+            ),
+            Tool(
+                name="set_text_formatting",
+                description="设置文本格式",
+                inputSchema={
+                    "type": "object",
+                    "properties": {
+                        "slide_index": {
+                            "type": "integer",
+                            "description": "幻灯片索引（从0开始）"
+                        },
+                        "shape_index": {
+                            "type": "integer",
+                            "description": "形状索引（从0开始）"
+                        },
+                        "font_name": {
+                            "type": "string",
+                            "description": "字体名称（可选）"
+                        },
+                        "font_size": {
+                            "type": "integer",
+                            "description": "字体大小（可选）"
+                        },
+                        "font_color": {
+                            "type": "string",
+                            "description": "字体颜色（十六进制，可选）"
+                        },
+                        "bold": {
+                            "type": "boolean",
+                            "description": "是否加粗（可选）"
+                        },
+                        "italic": {
+                            "type": "boolean",
+                            "description": "是否斜体（可选）"
+                        },
+                        "underline": {
+                            "type": "boolean",
+                            "description": "是否下划线（可选）"
+                        }
+                    },
+                    "required": ["slide_index", "shape_index"]
+                }
+            ),
+            Tool(
+                name="get_slide_shapes_info",
+                description="获取幻灯片中所有形状的信息",
+                inputSchema={
+                    "type": "object",
+                    "properties": {
+                        "slide_index": {
+                            "type": "integer",
+                            "description": "幻灯片索引（从0开始）"
+                        }
+                    },
+                    "required": ["slide_index"]
+                }
             )
         ]
 
@@ -364,6 +568,113 @@ async def handle_call_tool(name: str, arguments: dict):
             else:
                 result = ppt_editor.delete_slide(slide_index)
 
+        elif name == "duplicate_slide":
+            slide_index = arguments.get("slide_index")
+            if slide_index is None:
+                result = {"success": False, "error": "缺少必需参数: slide_index"}
+            else:
+                result = ppt_editor.duplicate_slide(slide_index)
+
+        elif name == "move_slide":
+            from_index = arguments.get("from_index")
+            to_index = arguments.get("to_index")
+            if from_index is None or to_index is None:
+                result = {"success": False, "error": "缺少必需参数: from_index 或 to_index"}
+            else:
+                result = ppt_editor.move_slide(from_index, to_index)
+
+        elif name == "add_table":
+            slide_index = arguments.get("slide_index")
+            rows = arguments.get("rows")
+            cols = arguments.get("cols")
+            if slide_index is None or rows is None or cols is None:
+                result = {"success": False, "error": "缺少必需参数: slide_index, rows 或 cols"}
+            else:
+                left = arguments.get("left", 1)
+                top = arguments.get("top", 2)
+                width = arguments.get("width", 8)
+                height = arguments.get("height", 4)
+                result = ppt_editor.add_table(slide_index, rows, cols, left, top, width, height)
+
+        elif name == "set_table_cell_text":
+            slide_index = arguments.get("slide_index")
+            table_index = arguments.get("table_index")
+            row = arguments.get("row")
+            col = arguments.get("col")
+            text = arguments.get("text")
+            # 类型检查验证
+            required_params = {
+                'slide_index': slide_index,
+                'table_index': table_index,
+                'row': row,
+                'col': col,
+                'text': text
+            }
+            
+            # 检查None值
+            if any(v is None for v in required_params.values()):
+                missing = [k for k, v in required_params.items() if v is None]
+                result = {"success": False, "error": f"缺少必需参数: {', '.join(missing)}"}
+            else:
+                try:
+                    # 类型断言
+                    assert isinstance(slide_index, int), "slide_index必须是整数"
+                    assert isinstance(table_index, int), "table_index必须是整数"
+                    assert isinstance(row, int), "row必须是整数"
+                    assert isinstance(col, int), "col必须是整数"
+                    assert isinstance(text, str), "text必须是字符串"
+                    
+                    result = ppt_editor.set_table_cell_text(
+                        slide_index=slide_index,
+                        table_index=table_index,
+                        row=row,
+                        col=col,
+                        text=text
+                    )
+                except AssertionError as e:
+                    result = {"success": False, "error": f"参数验证失败: {str(e)}"}
+                except Exception as e:
+                    result = {"success": False, "error": str(e)}
+
+        elif name == "set_slide_background_color":
+            slide_index = arguments.get("slide_index")
+            color = arguments.get("color")
+            if slide_index is None or not color:
+                result = {"success": False, "error": "缺少必需参数: slide_index 或 color"}
+            else:
+                result = ppt_editor.set_slide_background_color(slide_index, color)
+
+        elif name == "add_hyperlink":
+            slide_index = arguments.get("slide_index")
+            shape_index = arguments.get("shape_index")
+            url = arguments.get("url")
+            if slide_index is None or shape_index is None or not url:
+                result = {"success": False, "error": "缺少必需参数: slide_index, shape_index 或 url"}
+            else:
+                display_text = arguments.get("display_text")
+                result = ppt_editor.add_hyperlink(slide_index, shape_index, url, display_text)
+
+        elif name == "set_text_formatting":
+            slide_index = arguments.get("slide_index")
+            shape_index = arguments.get("shape_index")
+            if slide_index is None or shape_index is None:
+                result = {"success": False, "error": "缺少必需参数: slide_index 或 shape_index"}
+            else:
+                font_name = arguments.get("font_name")
+                font_size = arguments.get("font_size")
+                font_color = arguments.get("font_color")
+                bold = arguments.get("bold")
+                italic = arguments.get("italic")
+                underline = arguments.get("underline")
+                result = ppt_editor.set_text_formatting(slide_index, shape_index, font_name, font_size, font_color, bold, italic, underline)
+
+        elif name == "get_slide_shapes_info":
+            slide_index = arguments.get("slide_index")
+            if slide_index is None:
+                result = {"success": False, "error": "缺少必需参数: slide_index"}
+            else:
+                result = ppt_editor.get_slide_shapes_info(slide_index)
+
         else:
             result = {"success": False, "error": f"未知的工具: {name}"}
 
@@ -379,7 +690,14 @@ async def handle_call_tool(name: str, arguments: dict):
 async def main():
     """主函数"""
     # 使用stdio运行服务器
-    async with stdio_server() as (read_stream, write_stream):
+    # 标准MCP服务器运行方式
+    import asyncio
+    from contextlib import AsyncExitStack
+    
+    async with AsyncExitStack() as stack:
+        streams = await stack.enter_async_context(stdio_server())
+        read_stream, write_stream = streams
+        
         await server.run(
             read_stream,
             write_stream,
