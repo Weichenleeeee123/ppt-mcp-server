@@ -14,8 +14,6 @@ try:
     from pptx.util import Inches, Pt
     from pptx.enum.shapes import MSO_SHAPE
     from pptx.dml.color import RGBColor
-    from pptx.shapes.autoshape import Shape
-    from typing import cast
 except ImportError:
     raise ImportError("请安装python-pptx库: pip install python-pptx")
 
@@ -498,17 +496,23 @@ class PowerPointEditor:
 
             slide = slides[slide_index]
 
-            # 查找表格
-            # 类型安全的表格查找
-            tables: List[Shape] = [
-                shape for shape in slide.shapes
-                if isinstance(shape, Shape) and hasattr(shape, 'table')
-            ]
-            
+            # 查找表格 - 使用更安全的方法
+            tables = []
+            for shape in slide.shapes:
+                try:
+                    # 检查是否是表格形状
+                    if hasattr(shape, 'table'):
+                        table_obj = getattr(shape, 'table', None)
+                        if table_obj is not None:
+                            tables.append(shape)
+                except:
+                    continue
+
             if table_index >= len(tables):
                 return {"success": False, "error": f"表格索引超出范围: {table_index}"}
-                
-            table = tables[table_index].table  # type: ignore
+
+            table_shape = tables[table_index]
+            table = getattr(table_shape, 'table')
 
             if row >= len(table.rows) or col >= len(table.columns):
                 return {"success": False, "error": "单元格位置超出表格范围"}
@@ -576,33 +580,38 @@ class PowerPointEditor:
             # 添加超链接
             try:
                 # 类型安全的文本框操作
-                if not hasattr(shape, 'text_frame'):
-                    return {"success": False, "error": "形状不支持文本框"}
-                    
-                text_frame = getattr(shape, 'text_frame')
-                if text_frame is None:
-                    return {"success": False, "error": "文本框不可用"}
-                    
-                if display_text:
-                    text_frame.text = display_text
-                    
-                if not text_frame.paragraphs:
-                    paragraph = text_frame.add_paragraph()
+                if hasattr(shape, 'text_frame'):
+                    text_frame = getattr(shape, 'text_frame')
+                    if text_frame is not None:
+                        if display_text:
+                            text_frame.text = display_text
+
+                        if not text_frame.paragraphs:
+                            paragraph = text_frame.add_paragraph()
+                        else:
+                            paragraph = text_frame.paragraphs[0]
+
+                        if not paragraph.runs:
+                            run = paragraph.add_run()
+                        else:
+                            run = paragraph.runs[0]
+
+                        run.hyperlink.address = url
+                    else:
+                        # 其他形状类型
+                        if hasattr(shape, 'click_action'):
+                            shape.click_action.hyperlink.address = url
+                        else:
+                            return {"success": False, "error": "形状不支持超链接"}
                 else:
-                    paragraph = text_frame.paragraphs[0]
-                    
-                if not paragraph.runs:
-                    run = paragraph.add_run()
-                else:
-                    run = paragraph.runs[0]
-                    
-                run.hyperlink.address = url
-                
+                    # 其他形状类型
+                    if hasattr(shape, 'click_action'):
+                        shape.click_action.hyperlink.address = url
+                    else:
+                        return {"success": False, "error": "形状不支持超链接"}
+
             except Exception as e:
                 return {"success": False, "error": f"添加超链接失败: {str(e)}"}
-            else:
-                # 其他形状类型
-                shape.click_action.hyperlink.address = url
 
             return {
                 "success": True,
