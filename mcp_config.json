@@ -1,10 +1,13 @@
 {
   "mcpServers": {
     "powerpoint-editor": {
-      "command": "python",
-      "args": ["main.py"],
-      "cwd": ".",
-      "env": {}
+      "command": "uv",
+      "args": [
+        "--directory",
+        "{{PATH_TO_SRC}}/ppt",
+        "run",
+        "main.py"
+      ]
     }
   }
 }
