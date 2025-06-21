@@ -72,16 +72,40 @@ class PowerPointEditor:
             if not save_path:
                 return {"success": False, "error": "请指定保存路径"}
 
+            # 保存前验证过渡效果
+            transition_count = self._count_transitions()
+
             self.current_presentation.save(save_path)
             self.current_file_path = save_path
 
             return {
                 "success": True,
                 "message": f"成功保存演示文稿: {save_path}",
-                "file_path": save_path
+                "file_path": save_path,
+                "slides_with_transitions": transition_count,
+                "note": f"文件包含 {transition_count} 张有过渡效果的幻灯片" if transition_count > 0 else "文件不包含过渡效果"
             }
         except Exception as e:
             return {"success": False, "error": str(e)}
+
+    def _count_transitions(self) -> int:
+        """统计有过渡效果的幻灯片数量"""
+        try:
+            if not self.current_presentation:
+                return 0
+
+            count = 0
+            namespaces = {'p': 'http://schemas.openxmlformats.org/presentationml/2006/main'}
+
+            for slide in self.current_presentation.slides:
+                slide_element = slide._element
+                transition_elem = slide_element.find('.//p:transition', namespaces)
+                if transition_elem is not None:
+                    count += 1
+
+            return count
+        except:
+            return 0
 
     def add_slide(self, layout_index: int = 1) -> Dict[str, Any]:
         """添加新幻灯片"""
@@ -795,7 +819,15 @@ class PowerPointEditor:
                 # 解析XML并插入到幻灯片中
                 parser = etree.XMLParser(ns_clean=True, recover=True)
                 transition_elem = etree.fromstring(transition_xml.encode('utf-8'), parser)
+
+                # 插入过渡元素到幻灯片开头
+                # 这是标准的插入位置，应该对所有布局类型都有效
                 slide_element.insert(0, transition_elem)
+
+                # 验证插入是否成功
+                verification_elem = slide_element.find('.//p:transition', namespaces)
+                if verification_elem is None:
+                    return {"success": False, "error": "过渡效果XML插入失败"}
 
             return {
                 "success": True,
@@ -803,7 +835,8 @@ class PowerPointEditor:
                 "transition_type": transition_type,
                 "duration": duration,
                 "advance_on_click": advance_on_click,
-                "advance_after_time": advance_after_time
+                "advance_after_time": advance_after_time,
+                "verification": "过渡效果已验证插入成功" if transition_type.lower() != "none" else "已移除过渡效果"
             }
 
         except Exception as e:
@@ -859,26 +892,82 @@ class PowerPointEditor:
 
         return xml_string
 
+    def apply_transition_to_all_slides(self, transition_type: str = "fade", duration: float = 1.0) -> Dict[str, Any]:
+        """为所有幻灯片应用统一的过渡效果"""
+        try:
+            if not self.current_presentation:
+                return {"success": False, "error": "没有打开的演示文稿"}
+
+            slides = self.current_presentation.slides
+            if len(slides) == 0:
+                return {"success": False, "error": "演示文稿中没有幻灯片"}
+
+            success_count = 0
+            failed_slides = []
+
+            # 为每张幻灯片设置过渡效果
+            for i in range(len(slides)):
+                result = self.set_slide_transition(i, transition_type, duration, True, None)
+                if result.get("success"):
+                    success_count += 1
+                else:
+                    failed_slides.append(i)
+
+            if success_count == len(slides):
+                return {
+                    "success": True,
+                    "message": f"成功为所有 {len(slides)} 张幻灯片设置了 '{transition_type}' 过渡效果",
+                    "transition_type": transition_type,
+                    "duration": duration,
+                    "slides_processed": len(slides)
+                }
+            else:
+                return {
+                    "success": True,
+                    "message": f"为 {success_count}/{len(slides)} 张幻灯片设置了过渡效果",
+                    "transition_type": transition_type,
+                    "duration": duration,
+                    "slides_processed": success_count,
+                    "failed_slides": failed_slides,
+                    "warning": f"有 {len(failed_slides)} 张幻灯片设置失败"
+                }
+
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+
     def get_available_transitions(self) -> Dict[str, Any]:
         """获取可用的过渡效果列表"""
         try:
             # 只返回实际支持的过渡效果
             transitions = [
                 {"name": "none", "description": "无过渡效果"},
-                {"name": "fade", "description": "淡入淡出"},
-                {"name": "push", "description": "推入"},
-                {"name": "wipe", "description": "擦除"},
-                {"name": "split", "description": "分割"},
-                {"name": "zoom", "description": "缩放"},
-                {"name": "blinds", "description": "百叶窗"},
-                {"name": "dissolve", "description": "溶解"}
+                {"name": "fade", "description": "淡入淡出 - 推荐用于专业演示"},
+                {"name": "push", "description": "推入 - 动感十足"},
+                {"name": "wipe", "description": "擦除 - 简洁流畅"},
+                {"name": "split", "description": "分割 - 创意效果"},
+                {"name": "zoom", "description": "缩放 - 突出重点"},
+                {"name": "blinds", "description": "百叶窗 - 经典效果"},
+                {"name": "dissolve", "description": "溶解 - 柔和过渡"}
             ]
 
             return {
                 "success": True,
                 "transitions": transitions,
                 "total_count": len(transitions),
-                "note": "这些是当前实现支持的过渡效果"
+                "note": "这些动画效果可以让您的演示文稿更加生动有趣",
+                "recommendation": "推荐使用 'fade' 效果，适合大多数专业演示场合"
             }
         except Exception as e:
             return {"success": False, "error": str(e)}
+
+    def make_presentation_professional(self) -> Dict[str, Any]:
+        """一键让演示文稿变得专业 - 添加淡入淡出过渡效果"""
+        return self.apply_transition_to_all_slides("fade", 1.0)
+
+    def add_smooth_transitions(self) -> Dict[str, Any]:
+        """为演示文稿添加流畅的过渡动画"""
+        return self.apply_transition_to_all_slides("fade", 0.8)
+
+    def add_dynamic_effects(self) -> Dict[str, Any]:
+        """为演示文稿添加动感效果"""
+        return self.apply_transition_to_all_slides("push", 1.2)

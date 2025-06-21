@@ -478,8 +478,8 @@ async def handle_list_tools():
                 }
             ),
             Tool(
-                name="set_slide_transition",
-                description="设置幻灯片过渡效果",
+                name="add_slide_animation",
+                description="为幻灯片添加动画过渡效果，让演示更生动有趣。推荐在创建演示文稿时使用，可以让幻灯片切换更加流畅美观",
                 inputSchema={
                     "type": "object",
                     "properties": {
@@ -487,32 +487,80 @@ async def handle_list_tools():
                             "type": "integer",
                             "description": "幻灯片索引（从0开始）"
                         },
-                        "transition_type": {
+                        "animation_style": {
                             "type": "string",
-                            "description": "过渡类型（none, fade, push, wipe, split, zoom, blinds, dissolve）",
+                            "description": "动画风格：fade(淡入淡出-推荐), push(推入), wipe(擦除), zoom(缩放), split(分割), blinds(百叶窗), dissolve(溶解), none(无动画)",
                             "default": "fade"
                         },
-                        "duration": {
-                            "type": "number",
-                            "description": "过渡持续时间（秒）",
-                            "default": 1.0
+                        "speed": {
+                            "type": "string",
+                            "description": "动画速度：fast(快速), medium(中等), slow(慢速)",
+                            "default": "medium"
                         },
-                        "advance_on_click": {
+                        "auto_advance": {
                             "type": "boolean",
-                            "description": "是否点击前进",
-                            "default": True
+                            "description": "是否自动切换到下一张幻灯片",
+                            "default": False
                         },
-                        "advance_after_time": {
+                        "auto_advance_seconds": {
                             "type": "number",
-                            "description": "自动前进时间（秒，可选）"
+                            "description": "自动切换延迟时间（秒，仅在auto_advance为true时有效）",
+                            "default": 3.0
                         }
                     },
                     "required": ["slide_index"]
                 }
             ),
             Tool(
-                name="get_available_transitions",
-                description="获取可用的过渡效果列表",
+                name="make_presentation_dynamic",
+                description="为整个演示文稿添加统一的动画效果，让所有幻灯片都有流畅的过渡动画。这是制作专业演示文稿的重要步骤",
+                inputSchema={
+                    "type": "object",
+                    "properties": {
+                        "animation_style": {
+                            "type": "string",
+                            "description": "统一的动画风格：fade(淡入淡出-推荐), push(推入), wipe(擦除), zoom(缩放)",
+                            "default": "fade"
+                        },
+                        "speed": {
+                            "type": "string",
+                            "description": "动画速度：fast(快速), medium(中等), slow(慢速)",
+                            "default": "medium"
+                        }
+                    },
+                    "required": []
+                }
+            ),
+            Tool(
+                name="get_animation_options",
+                description="查看所有可用的幻灯片动画效果选项",
+                inputSchema={
+                    "type": "object",
+                    "properties": {},
+                    "required": []
+                }
+            ),
+            Tool(
+                name="make_professional_presentation",
+                description="一键让演示文稿变得专业！自动为所有幻灯片添加优雅的淡入淡出过渡效果，提升演示质量",
+                inputSchema={
+                    "type": "object",
+                    "properties": {},
+                    "required": []
+                }
+            ),
+            Tool(
+                name="add_smooth_transitions",
+                description="为演示文稿添加流畅的过渡动画，让幻灯片切换更加自然",
+                inputSchema={
+                    "type": "object",
+                    "properties": {},
+                    "required": []
+                }
+            ),
+            Tool(
+                name="add_dynamic_effects",
+                description="为演示文稿添加动感的过渡效果，让演示更有活力",
                 inputSchema={
                     "type": "object",
                     "properties": {},
@@ -717,6 +765,48 @@ async def handle_call_tool(name: str, arguments: dict):
             else:
                 result = ppt_editor.get_slide_shapes_info(slide_index)
 
+        elif name == "add_slide_animation":
+            slide_index = arguments.get("slide_index")
+            if slide_index is None:
+                result = {"success": False, "error": "缺少必需参数: slide_index"}
+            else:
+                animation_style = arguments.get("animation_style", "fade")
+                speed = arguments.get("speed", "medium")
+                auto_advance = arguments.get("auto_advance", False)
+                auto_advance_seconds = arguments.get("auto_advance_seconds", 3.0)
+
+                # 转换速度参数
+                speed_mapping = {"fast": 0.5, "medium": 1.0, "slow": 2.0}
+                duration = speed_mapping.get(speed, 1.0)
+
+                # 设置自动前进时间
+                advance_after_time = auto_advance_seconds if auto_advance else None
+
+                result = ppt_editor.set_slide_transition(slide_index, animation_style, duration, True, advance_after_time)
+
+        elif name == "make_presentation_dynamic":
+            animation_style = arguments.get("animation_style", "fade")
+            speed = arguments.get("speed", "medium")
+
+            # 转换速度参数
+            speed_mapping = {"fast": 0.5, "medium": 1.0, "slow": 2.0}
+            duration = speed_mapping.get(speed, 1.0)
+
+            result = ppt_editor.apply_transition_to_all_slides(animation_style, duration)
+
+        elif name == "get_animation_options":
+            result = ppt_editor.get_available_transitions()
+
+        elif name == "make_professional_presentation":
+            result = ppt_editor.make_presentation_professional()
+
+        elif name == "add_smooth_transitions":
+            result = ppt_editor.add_smooth_transitions()
+
+        elif name == "add_dynamic_effects":
+            result = ppt_editor.add_dynamic_effects()
+
+        # 保持向后兼容性
         elif name == "set_slide_transition":
             slide_index = arguments.get("slide_index")
             if slide_index is None:
@@ -747,7 +837,6 @@ async def main():
     """主函数"""
     # 使用stdio运行服务器
     # 标准MCP服务器运行方式
-    import asyncio
     from contextlib import AsyncExitStack
     
     async with AsyncExitStack() as stack:
