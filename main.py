@@ -476,6 +476,48 @@ async def handle_list_tools():
                     },
                     "required": ["slide_index"]
                 }
+            ),
+            Tool(
+                name="set_slide_transition",
+                description="设置幻灯片过渡效果",
+                inputSchema={
+                    "type": "object",
+                    "properties": {
+                        "slide_index": {
+                            "type": "integer",
+                            "description": "幻灯片索引（从0开始）"
+                        },
+                        "transition_type": {
+                            "type": "string",
+                            "description": "过渡类型（none, fade, push, wipe, split, zoom, blinds, dissolve）",
+                            "default": "fade"
+                        },
+                        "duration": {
+                            "type": "number",
+                            "description": "过渡持续时间（秒）",
+                            "default": 1.0
+                        },
+                        "advance_on_click": {
+                            "type": "boolean",
+                            "description": "是否点击前进",
+                            "default": True
+                        },
+                        "advance_after_time": {
+                            "type": "number",
+                            "description": "自动前进时间（秒，可选）"
+                        }
+                    },
+                    "required": ["slide_index"]
+                }
+            ),
+            Tool(
+                name="get_available_transitions",
+                description="获取可用的过渡效果列表",
+                inputSchema={
+                    "type": "object",
+                    "properties": {},
+                    "required": []
+                }
             )
         ]
 
@@ -674,6 +716,20 @@ async def handle_call_tool(name: str, arguments: dict):
                 result = {"success": False, "error": "缺少必需参数: slide_index"}
             else:
                 result = ppt_editor.get_slide_shapes_info(slide_index)
+
+        elif name == "set_slide_transition":
+            slide_index = arguments.get("slide_index")
+            if slide_index is None:
+                result = {"success": False, "error": "缺少必需参数: slide_index"}
+            else:
+                transition_type = arguments.get("transition_type", "fade")
+                duration = arguments.get("duration", 1.0)
+                advance_on_click = arguments.get("advance_on_click", True)
+                advance_after_time = arguments.get("advance_after_time")
+                result = ppt_editor.set_slide_transition(slide_index, transition_type, duration, advance_on_click, advance_after_time)
+
+        elif name == "get_available_transitions":
+            result = ppt_editor.get_available_transitions()
 
         else:
             result = {"success": False, "error": f"未知的工具: {name}"}

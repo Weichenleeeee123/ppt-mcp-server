@@ -750,3 +750,135 @@ class PowerPointEditor:
         except:
             # 如果复制失败，忽略该形状
             pass
+
+    def set_slide_transition(self, slide_index: int, transition_type: str = "fade",
+                           duration: float = 1.0, advance_on_click: bool = True,
+                           advance_after_time: Optional[float] = None) -> Dict[str, Any]:
+        """设置幻灯片过渡效果"""
+        try:
+            if not self.current_presentation:
+                return {"success": False, "error": "没有打开的演示文稿"}
+
+            slides = self.current_presentation.slides
+            if slide_index >= len(slides):
+                return {"success": False, "error": f"幻灯片索引超出范围: {slide_index}"}
+
+            slide = slides[slide_index]
+
+            # 支持的过渡类型
+            supported_transitions = ["none", "fade", "push", "wipe", "split", "zoom", "blinds", "dissolve"]
+
+            if transition_type.lower() not in supported_transitions:
+                return {"success": False, "error": f"不支持的过渡类型: {transition_type}。支持的类型: {', '.join(supported_transitions)}"}
+
+            # 获取幻灯片的XML元素
+            slide_element = slide._element
+
+            # 定义命名空间
+            namespaces = {'p': 'http://schemas.openxmlformats.org/presentationml/2006/main'}
+
+            # 移除现有的过渡元素（如果存在）
+            existing_transition = slide_element.find('.//p:transition', namespaces)
+            if existing_transition is not None:
+                slide_element.remove(existing_transition)
+
+            # 创建新的过渡元素（如果不是none）
+            if transition_type.lower() != "none":
+                try:
+                    from lxml import etree
+                except ImportError:
+                    return {"success": False, "error": "需要安装lxml库: pip install lxml"}
+
+                # 创建过渡XML字符串
+                transition_xml = self._create_transition_xml(transition_type, duration, advance_on_click, advance_after_time)
+
+                # 解析XML并插入到幻灯片中
+                parser = etree.XMLParser(ns_clean=True, recover=True)
+                transition_elem = etree.fromstring(transition_xml.encode('utf-8'), parser)
+                slide_element.insert(0, transition_elem)
+
+            return {
+                "success": True,
+                "message": f"成功设置幻灯片 {slide_index} 的过渡效果",
+                "transition_type": transition_type,
+                "duration": duration,
+                "advance_on_click": advance_on_click,
+                "advance_after_time": advance_after_time
+            }
+
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+
+    def _create_transition_xml(self, transition_type: str, duration: float,
+                              advance_on_click: bool, advance_after_time: Optional[float]) -> str:
+        """创建过渡效果的XML字符串"""
+        # 设置过渡速度
+        if duration <= 0.5:
+            speed = "fast"
+        elif duration <= 2.0:
+            speed = "med"
+        else:
+            speed = "slow"
+
+        # 基础过渡元素
+        transition_attrs = f'spd="{speed}"'
+
+        if advance_on_click:
+            transition_attrs += ' advClick="1"'
+        else:
+            transition_attrs += ' advClick="0"'
+
+        if advance_after_time is not None:
+            advance_time_ms = int(advance_after_time * 1000)
+            transition_attrs += f' advTm="{advance_time_ms}"'
+
+        # 根据过渡类型创建相应的XML
+        transition_content = ""
+        if transition_type.lower() == "fade":
+            transition_content = '<p:fade/>'
+        elif transition_type.lower() == "push":
+            transition_content = '<p:push dir="l"/>'
+        elif transition_type.lower() == "wipe":
+            transition_content = '<p:wipe dir="l"/>'
+        elif transition_type.lower() == "zoom":
+            transition_content = '<p:zoom/>'
+        elif transition_type.lower() == "split":
+            transition_content = '<p:split orient="horz" dir="out"/>'
+        elif transition_type.lower() == "blinds":
+            transition_content = '<p:blinds dir="horz"/>'
+        elif transition_type.lower() == "dissolve":
+            transition_content = '<p:dissolve/>'
+        else:
+            # 默认使用fade
+            transition_content = '<p:fade/>'
+
+        # 完整的XML字符串
+        xml_string = f'''<p:transition xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main" {transition_attrs}>
+    {transition_content}
+</p:transition>'''
+
+        return xml_string
+
+    def get_available_transitions(self) -> Dict[str, Any]:
+        """获取可用的过渡效果列表"""
+        try:
+            # 只返回实际支持的过渡效果
+            transitions = [
+                {"name": "none", "description": "无过渡效果"},
+                {"name": "fade", "description": "淡入淡出"},
+                {"name": "push", "description": "推入"},
+                {"name": "wipe", "description": "擦除"},
+                {"name": "split", "description": "分割"},
+                {"name": "zoom", "description": "缩放"},
+                {"name": "blinds", "description": "百叶窗"},
+                {"name": "dissolve", "description": "溶解"}
+            ]
+
+            return {
+                "success": True,
+                "transitions": transitions,
+                "total_count": len(transitions),
+                "note": "这些是当前实现支持的过渡效果"
+            }
+        except Exception as e:
+            return {"success": False, "error": str(e)}

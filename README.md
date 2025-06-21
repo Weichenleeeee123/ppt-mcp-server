@@ -39,6 +39,11 @@
 - 为形状添加超链接
 - 获取幻灯片中所有形状的详细信息
 
+### 动画和过渡
+- 设置幻灯片过渡效果（淡入淡出、推入、擦除、分割、缩放、百叶窗、溶解等）
+- 控制过渡时间和前进方式
+- 支持自动前进和点击前进
+
 ## 安装依赖
 
 ```bash
@@ -184,6 +189,18 @@ python example.py
 ### 19. get_slide_shapes_info
 获取幻灯片中所有形状的信息
 - `slide_index`: 幻灯片索引
+
+### 20. set_slide_transition
+设置幻灯片过渡效果
+- `slide_index`: 幻灯片索引
+- `transition_type`: 过渡类型（none, fade, push, wipe, split, zoom, blinds, dissolve）
+- `duration`: 过渡持续时间（秒）
+- `advance_on_click`: 是否点击前进
+- `advance_after_time`: 自动前进时间（秒，可选）
+
+### 21. get_available_transitions
+获取可用的过渡效果列表
+- 无参数
 
 ## 注意事项
 
