@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "powerpoint-editor": {
+      "command": "python",
+      "args": ["main.py"],
+      "cwd": ".",
+      "env": {}
+    }
+  }
+}
