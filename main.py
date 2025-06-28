@@ -566,6 +566,20 @@ async def handle_list_tools():
                     "properties": {},
                     "required": []
                 }
+            ),
+            Tool(
+                name="generate_outline",
+                description="根据一个主题，生成一个结构化的JSON大纲，用于后续的PPT创建。",
+                inputSchema={
+                    "type": "object",
+                    "properties": {
+                        "topic": {
+                            "type": "string",
+                            "description": "演示文稿的主题"
+                        }
+                    },
+                    "required": ["topic"]
+                }
             )
         ]
 
@@ -820,6 +834,13 @@ async def handle_call_tool(name: str, arguments: dict):
 
         elif name == "get_available_transitions":
             result = ppt_editor.get_available_transitions()
+
+        elif name == "generate_outline":
+            topic = arguments.get("topic")
+            if not topic:
+                result = {"success": False, "error": "缺少必需参数: topic"}
+            else:
+                result = ppt_editor.generate_outline_for_topic(topic)
 
         else:
             result = {"success": False, "error": f"未知的工具: {name}"}

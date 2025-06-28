@@ -7,6 +7,7 @@ PowerPoint编辑器工具类
 import logging
 from typing import Any, Dict, List, Optional, TYPE_CHECKING
 from pathlib import Path
+import json
 
 # 导入PowerPoint相关库
 try:
@@ -976,3 +977,60 @@ class PowerPointEditor:
     def add_dynamic_effects(self) -> Dict[str, Any]:
         """为演示文稿添加动感效果"""
         return self.apply_transition_to_all_slides("push", 1.2)
+
+    def generate_outline_for_topic(self, topic: str) -> Dict[str, Any]:
+        """根据主题，生成一个结构化的、用于创建演示文稿的JSON大纲。"""
+        try:
+            # 为了演示，我们在这里生成一个硬编码的示例大纲。
+            # 在实际应用中，这里可以是对真正LLM服务的API调用。
+            outline_data = {
+                "slides": [
+                    {
+                        "title": f"关于 {topic} 的深入探讨",
+                        "subtitle": "由AI辅助生成"
+                    },
+                    {
+                        "title": "介绍与背景",
+                        "content": [
+                            f"{topic} 的定义与重要性",
+                            "相关的历史发展",
+                            "本次讨论的主要范围"
+                        ]
+                    },
+                    {
+                        "title": "核心要点分析",
+                        "content": [
+                            "第一个关键方面",
+                            "第二个关键方面，并提供示例",
+                            "第三个关键方面的深入分析"
+                        ]
+                    },
+                    {
+                        "title": "案例研究或实际应用",
+                        "content": [
+                            f"一个关于 {topic} 的真实世界案例",
+                            "从案例中得到的启示",
+                            "如何将这些应用到实践中"
+                        ]
+                    },
+                    {
+                        "title": "总结与展望",
+                        "content": [
+                            f"对 {topic} 的核心内容进行总结",
+                            "未来的发展趋势",
+                            "问答环节"
+                        ]
+                    }
+                ]
+            }
+            
+            outline_json = json.dumps(outline_data, ensure_ascii=False, indent=2)
+
+            return {
+                "success": True,
+                "message": f"成功为主题 '{topic}' 生成大纲。",
+                "outline_json": outline_json
+            }
+        except Exception as e:
+            logger.error(f"为主题 '{topic}' 生成大纲时出错: {e}")
+            return {"success": False, "error": str(e)}
