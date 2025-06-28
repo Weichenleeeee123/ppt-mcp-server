@@ -820,9 +820,14 @@ class PowerPointEditor:
                 parser = etree.XMLParser(ns_clean=True, recover=True)
                 transition_elem = etree.fromstring(transition_xml.encode('utf-8'), parser)
 
-                # 插入过渡元素到幻灯片开头
-                # 这是标准的插入位置，应该对所有布局类型都有效
-                slide_element.insert(0, transition_elem)
+                # 将过渡元素插入到符合规范的位置
+                # p:transition 应该在 p:cSld 和 p:clrMapOvr 之间
+                color_map_override = slide_element.find('.//p:clrMapOvr', namespaces)
+                if color_map_override is not None:
+                    color_map_override.addprevious(transition_elem)
+                else:
+                    # 如果没有 p:clrMapOvr，则追加到末尾
+                    slide_element.append(transition_elem)
 
                 # 验证插入是否成功
                 verification_elem = slide_element.find('.//p:transition', namespaces)
